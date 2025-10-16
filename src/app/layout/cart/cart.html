@@ -1,0 +1,185 @@
+<main class="py-5">
+  <div class="container">
+    <h1>Your Cart</h1>
+    <div class="card" style="background-color: #f4f4f4">
+      <div class="card-body" *ngIf="cart().items">
+        @if (cart().items.length > 0) { @for (item of cart().items; track item) { @if
+        (!item.isChanged) {
+        <div class="card mb-3">
+          <div class="row g-0 p-3">
+            <div class="col-md-2 position-relative">
+              <img
+                [ngSrc]="item.product.image"
+                class="img-fluid rounded-start"
+                [alt]="item.product.title"
+                fill
+                [priority]="$first"
+              />
+            </div>
+            <div class="col-md-10 position-relative">
+              <div class="card-body">
+                <button
+                  class="btn btn-danger position-absolute end-0"
+                  (click)="removeFromCart(item.product._id)"
+                >
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <h4 class="card-title">{{ item.product.title }}</h4>
+                <h5 class="card-title">{{ item.product.price | currency : 'EGP ' }}</h5>
+                @if (item.product.stock < 6) {
+                <p class="card-text text-danger">
+                  {{ item.product.stock === 0 ? 'Out of stock' : `Last ${item.product.stock} items` }}
+                </p>
+                }
+                <div class="input-group mt-3" style="max-width: fit-content">
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    (click)="decreaseQuantity(item.product, quantityInput)"
+                    [disabled]="item.quantity < 2"
+                  >
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                  <input
+                    #quantityInput
+                    type="number"
+                    min="1"
+                    [max]="item.product.stock"
+                    [(ngModel)]="item.quantity"
+                    class="form-control"
+                    aria-label="Example text with button addon"
+                    aria-describedby="button-addon1"
+                    (change)="updateQuantity(item.product, $event)"
+                  />
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    (click)="increaseQuantity(item.product, quantityInput)"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+                <h5 class="card-title position-absolute end-0">
+                  Total Price: {{ item.quantity * item.product.price | currency : 'EGP ' }}
+                </h5>
+              </div>
+            </div>
+          </div>
+        </div>
+        } }
+        <div class="d-flex align-items-center justify-content-between">
+          <h4>
+            Total Price of {{ cart().totalQuantity }} items:
+            {{ cart().totalPrice | currency : 'EGP ' }}
+          </h4>
+          <div>
+            <button class="btn btn-success" (click)="makeOrder()" [disabled]="!isLoggedin()">
+              Make Order
+            </button>
+            <p *ngIf="!isLoggedin()" class="m-0"><small>*Login to make orders</small></p>
+          </div>
+        </div>
+        } @else {
+        <div class="d-flex align-items-center justify-content-between">
+          <h4>Oops! Your Cart is empty</h4>
+          <button class="btn btn-primary" routerLink="/home">Go for shopping</button>
+        </div>
+        } @if (isPriceChanged()) {
+        <hr class="my-4" />
+        <h3 class="mb-3">Oops! Some prices are changed</h3>
+        @for (item of cart().items; track item) { @if (item.isChanged) {
+        <div class="card mb-3">
+          <div class="row g-0 p-3">
+            <div class="col-md-2 position-relative">
+              <img
+                [ngSrc]="item.product.image"
+                class="img-fluid rounded-start"
+                [alt]="item.product.title"
+                fill
+                [priority]="$first"
+              />
+            </div>
+            <div class="col-md-10 position-relative">
+              <div class="card-body">
+                <button
+                  class="btn btn-danger position-absolute end-0"
+                  (click)="removeFromCart(item.product._id)"
+                >
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <h4 class="card-title">{{ item.product.title }}</h4>
+                <h6 class="card-title" style="text-decoration: line-through">
+                  {{ item.priceAtAdding | currency : 'EGP ' }}
+                </h6>
+                <h5 class="card-title">Now: {{ item.product.price | currency : 'EGP ' }}</h5>
+                @if (item.product.stock < 6) {
+                <p class="card-text text-danger">
+                  {{ item.product.stock === 0 ? 'Out of stock' : `Last ${item.product.stock} items` }}
+                </p>
+                }
+                <div class="input-group mt-3" style="max-width: fit-content">
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    (click)="decreaseQuantity(item.product, quantityInput)"
+                    [disabled]="item.quantity < 2"
+                  >
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                  <input
+                    #quantityInput
+                    type="number"
+                    min="1"
+                    [max]="item.product.stock"
+                    [(ngModel)]="item.quantity"
+                    class="form-control"
+                    aria-label="Example text with button addon"
+                    aria-describedby="button-addon1"
+                    (change)="updateQuantity(item.product, $event)"
+                  />
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    (click)="increaseQuantity(item.product, quantityInput)"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+                <div class="d-flex justify-content-end">
+                  <h5 class="card-title">
+                    Total Price: {{ item.quantity * item.product.price | currency : 'EGP ' }}
+                  </h5>
+                </div>
+                <div class="d-flex justify-content-end mt-2">
+                  <button class="btn btn-success" (click)="returnToCart(item)">
+                    Return to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        } } }
+      </div>
+    </div>
+  </div>
+</main>
+<!-- ALERTS -->
+<div
+  class="alert alert-success alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isSuccess()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div
+  class="alert alert-danger alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isError()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>

@@ -1,0 +1,178 @@
+<main class="d-flex justify-content-center align-items-center">
+  <div class="p-4 rounded-3 shadow-sm bg-light" style="width: 500px">
+    <form [formGroup]="registerForm" (ngSubmit)="register()">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="username" formControlName="name" />
+        @if(registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
+        <div class="msg">
+          <span *ngIf="registerForm.get('name')?.errors?.['required']">Name is required</span>
+        </div>
+        }
+      </div>
+      <div class="mb-3">
+        <label for="registerEmail" class="form-label">Email address</label>
+        <input
+          type="email"
+          class="form-control"
+          id="registerEmail"
+          aria-describedby="emailHelp"
+          placeholder="example@example.com"
+          formControlName="email"
+        />
+        @if(registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+        <div class="msg">
+          <span *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="registerForm.get('email')?.errors?.['pattern']"
+            >Please enter a valid email</span
+          >
+        </div>
+        }
+      </div>
+      <div class="mb-3">
+        <label for="registerPassword" class="form-label">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="registerPassword"
+          formControlName="password"
+        />
+        @if(registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+        <div class="msg">
+          <span *ngIf="registerForm.get('password')?.errors?.['required']"
+            >Password is required</span
+          >
+          <span *ngIf="registerForm.get('password')?.errors?.['pattern']"
+            >Please enter a strong password<br />* min-length 8 characters<br />* one uppercase
+            letter<br />* one lowercase letter<br />* one number</span
+          >
+        </div>
+        }
+      </div>
+      <div class="mb-3">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+        />
+        @if(registerForm.get('confirmPassword')?.invalid &&
+        registerForm.get('confirmPassword')?.touched) {
+        <div class="msg">
+          <div *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">
+            Confirm Password is required
+          </div>
+          <div *ngIf="registerForm.get('confirmPassword')?.errors?.['dismatchpassword']">
+            The password and the confirm doesn't match
+          </div>
+        </div>
+        }
+      </div>
+      <div formArrayName="phones">
+        <p>Phone Numbers</p>
+        @for(phone of phones.controls; track phone) {
+        <div class="input-group mb-3" [formGroupName]="$index">
+          <span class="input-group-text">
+            <input
+              class="form-check-input mt-0"
+              type="radio"
+              id="radio-phone-{{ $index }}"
+              aria-label="Radio button for following phone"
+              [checked]="phone.get('isDefault')?.value"
+              (change)="setPhoneDefault($index)"
+              name="phone"
+            />
+            <label for="radio-phone-{{ $index }}" style="margin-left: 5px">Main</label>
+          </span>
+          <input type="text" class="form-control" formControlName="number" />
+          <button class="btn btn-primary" type="button" *ngIf="$last" (click)="addPhone()">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            *ngIf="!$last"
+            (click)="removePhone($index)"
+          >
+            <i class="fa-solid fa-minus"></i>
+          </button>
+        </div>
+        @if(phone.get('number')?.invalid && phone.get('number')?.touched) {
+        <div class="msg mb-2" style="margin-top: -1rem">
+          <span *ngIf="phone.get('number')?.errors?.['required']">Phone number is required</span>
+          <span *ngIf="phone.get('number')?.errors?.['pattern']"
+            >Phone number must be 11 numbers</span
+          >
+        </div>
+        } }
+      </div>
+      <div formArrayName="addresses">
+        <p>Addresses</p>
+        @for(address of addresses.controls; track address) {
+        <div class="input-group mb-3" [formGroupName]="$index">
+          <span class="input-group-text">
+            <input
+              class="form-check-input mt-0"
+              type="radio"
+              id="radio-address-{{ $index }}"
+              aria-label="Radio button for following address"
+              [checked]="address.get('isDefault')?.value"
+              (change)="setAddressDefault($index)"
+              name="address"
+            />
+            <label for="radio-address-{{ $index }}" style="margin-left: 5px">Main</label>
+          </span>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Governorate"
+            formControlName="governorate"
+          />
+          <input type="text" class="form-control" placeholder="City" formControlName="city" />
+          <input type="text" class="form-control" placeholder="Street" formControlName="street" />
+          <button class="btn btn-primary" type="button" *ngIf="$last" (click)="addAddress()">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            *ngIf="!$last"
+            (click)="removeAddress($index)"
+          >
+            <i class="fa-solid fa-minus"></i>
+          </button>
+        </div>
+        @if(address.get('governorate')?.invalid && address.get('governorate')?.touched) {
+        <div class="msg mb-2" style="margin-top: -1rem">
+          <span *ngIf="address.get('governorate')?.errors?.['required']"
+            >Governorate is required</span
+          >
+        </div>
+        } @if(address.get('city')?.invalid && address.get('city')?.touched) {
+        <div class="msg mb-2" style="margin-top: -1rem">
+          <span *ngIf="address.get('city')?.errors?.['required']">City is required</span>
+        </div>
+        } @if(address.get('street')?.invalid && address.get('street')?.touched) {
+        <div class="msg mb-2" style="margin-top: -1rem">
+          <span *ngIf="address.get('street')?.errors?.['required']">Street is required</span>
+        </div>
+        } }
+      </div>
+      <button class="btn btn-primary w-100" [disabled]="registerForm.invalid">Register</button>
+      <div *ngIf="registerForm.invalid" class="text-secondary">
+        <small>*Please provide us with correct data</small>
+      </div>
+    </form>
+  </div>
+</main>
+<!-- ALERT -->
+<div
+  class="alert alert-danger alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isError()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>

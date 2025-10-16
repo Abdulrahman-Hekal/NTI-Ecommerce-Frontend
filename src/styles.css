@@ -1,0 +1,5 @@
+/* You can add global styles to this file, and also import other style files */
+main {
+  min-height: calc(100vh - 69.2px - 65px);
+  background-color: #eee;
+}

@@ -1,0 +1,295 @@
+<main class="py-5">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <h1>Your Orders</h1>
+      <select
+        class="form-select"
+        aria-label="Default select example"
+        [(ngModel)]="selectedStatue"
+        style="width: fit-content"
+        (change)="applyFilter()"
+      >
+        <option ngValue="" selected>All Orders</option>
+        @for (statue of allStatus; track statue) {
+        <option [ngValue]="statue">{{ statue }}</option>
+        }
+      </select>
+    </div>
+    @for (order of orders(); track order._id) {
+    <div class="card mb-4" style="background-color: #f4f4f4">
+      <div class="card-body">
+        <div
+          class="d-flex align-items-center gap-2 position-absolute end-0"
+          style="z-index: 5; margin-right: 1rem"
+        >
+          <button
+            type="button"
+            class="btn btn-warning text-light"
+            data-bs-toggle="modal"
+            data-bs-target="#updateOrderModal"
+            (click)="updateOrder(order)"
+            *ngIf="order.status === 'pending'"
+          >
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="setTarget(order)"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteOrderModal"
+            *ngIf="
+              order.status === 'delivered' ||
+              order.status === 'rejected' ||
+              order.status === 'cancelled'
+            "
+          >
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+        <h5 class="mb-3">
+          Status:
+          <span
+            [ngStyle]="{
+              color: redStatus.includes(order.status)
+                ? 'red'
+                : yellowStatus.includes(order.status)
+                ? '#ff9800'
+                : greenStatus.includes(order.status)
+                ? 'green'
+                : 'inherit'
+            }"
+            >{{ order.status }}</span
+          >
+        </h5>
+        @for (item of order.products; track item._id) {
+        <div class="card mb-3">
+          <div class="row g-0 p-3">
+            <div class="col-md-2 position-relative">
+              <img
+                [ngSrc]="item.product.image"
+                class="img-fluid rounded-start"
+                [alt]="item.product.title"
+                fill
+                [priority]="$first"
+              />
+            </div>
+            <div class="col-md-10 position-relative">
+              <div class="card-body">
+                <h4 class="card-title">{{ item.product.title }}</h4>
+                <h5 class="card-title">{{ item.priceAtOrdering | currency : 'EGP ' }}</h5>
+                <h5 class="card-title">Quantity: {{ item.quantity }} items</h5>
+                <h5 class="card-title position-absolute end-0">
+                  Total Price: {{ item.quantity * item.product.price | currency : 'EGP ' }}
+                </h5>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+        <h5>
+          Delivery address: {{ order.shippingAddress.street | titlecase }} -
+          {{ order.shippingAddress.city | titlecase }} -
+          {{ order.shippingAddress.governorate | titlecase }}
+        </h5>
+        <h5>Phone Number: {{ order.phone }}</h5>
+        <div class="d-flex align-items-center justify-content-between">
+          <h5>Ordered at: {{ order.orderedAt | date }}</h5>
+          <h4>
+            Order's Total Price:
+            {{ order.totalPrice | currency : 'EGP ' }}
+          </h4>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+          <button
+            class="btn btn-danger"
+            (click)="setTarget(order)"
+            data-bs-toggle="modal"
+            data-bs-target="#cancelOrderModal"
+            *ngIf="order.status === 'pending'"
+          >
+            Cancel Order
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</main>
+<!-- Modals -->
+<!-- Edit -->
+<div
+  class="modal fade"
+  id="updateOrderModal"
+  tabindex="-1"
+  aria-labelledby="updateOrderModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="updateOrderModalLabel">Edit Order</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="editForm">
+          <div formArrayName="products">
+            @for (product of products.controls; track product) {
+            <div class="form-group mb-3" [formGroupName]="$index">
+              <label *ngIf="targetOrder().products" for="text" class="form-label">
+                {{ targetOrder().products[$index].product.title }} quantity:
+              </label>
+              <input type="text" class="form-control" formControlName="quantity" />
+              <div class="msg" *ngIf="product.get('quantity')?.touched">
+                <span *ngIf="product.get('quantity')?.errors?.['required']"
+                  >Product Quantity is required</span
+                >
+                <span *ngIf="product.get('quantity')?.errors?.['min']"
+                  >Product Quantity minimum value is 1</span
+                >
+              </div>
+            </div>
+            }
+          </div>
+          <label for="text" class="form-label">shippingAddress:</label>
+          <div class="form-group input-group mb-3" formGroupName="shippingAddress">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Governorate"
+              formControlName="governorate"
+            />
+            <input type="text" class="form-control" placeholder="City" formControlName="city" />
+            <input type="text" class="form-control" placeholder="Street" formControlName="street" />
+          </div>
+          @if(editForm.get('shippingAddress')?.get('governorate')?.invalid &&
+          editForm.get('shippingAddress')?.get('governorate')?.touched) {
+          <div class="msg mb-2" style="margin-top: -1rem">
+            <span *ngIf="editForm.get('shippingAddress')?.get('governorate')?.errors?.['required']"
+              >Governorate is required</span
+            >
+          </div>
+          } @if(editForm.get('shippingAddress')?.get('city')?.invalid &&
+          editForm.get('shippingAddress')?.get('city')?.touched) {
+          <div class="msg mb-2" style="margin-top: -1rem">
+            <span *ngIf="editForm.get('shippingAddress')?.get('city')?.errors?.['required']"
+              >City is required</span
+            >
+          </div>
+          } @if(editForm.get('shippingAddress')?.get('street')?.invalid &&
+          editForm.get('shippingAddress')?.get('street')?.touched) {
+          <div class="msg mb-2" style="margin-top: -1rem">
+            <span *ngIf="editForm.get('shippingAddress')?.get('street')?.errors?.['required']"
+              >Street is required</span
+            >
+          </div>
+          }
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Phone Number: </label>
+            <input type="text" class="form-control" formControlName="phone" />
+            <div class="msg" *ngIf="editForm.get('phone')?.touched">
+              <span *ngIf="editForm.get('phone')?.errors?.['required']"
+                >Phone number is required</span
+              >
+              <span *ngIf="editForm.get('phone')?.errors?.['pattern']"
+                >Phone number must be 11 numbers</span
+              >
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-bs-dismiss="modal"
+          (click)="confirmUpdate()"
+        >
+          Save changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Cancel -->
+<div
+  class="modal fade"
+  id="cancelOrderModal"
+  tabindex="-1"
+  aria-labelledby="cancelOrderModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="cancelOrderModalLabel">Confirm Cancel</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h4>Are You Sure You Want To Cancel this Order</h4>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          data-bs-dismiss="modal"
+          (click)="cancelOrder()"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- DELETE -->
+<div
+  class="modal fade"
+  id="deleteOrderModal"
+  tabindex="-1"
+  aria-labelledby="deleteOrderModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="deleteOrderModalLabel">Confirm Delete</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h4>Are You Sure You Want To Delete this Order</h4>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          data-bs-dismiss="modal"
+          (click)="deleteOrder()"
+        >
+          Confirm Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ALERTS -->
+<div
+  class="alert alert-success alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isSuccess()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div
+  class="alert alert-danger alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isError()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>

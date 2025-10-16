@@ -1,0 +1,31 @@
+<main class="d-flex justify-content-center align-items-center">
+  <div class="p-4 rounded-3 shadow-sm bg-light" style="width: 500px">
+    <form [formGroup]="loginForm" (ngSubmit)="login()">
+      <div class="mb-3">
+        <label for="loginEmail" class="form-label">Email address</label>
+        <input
+          type="email"
+          class="form-control"
+          id="loginEmail"
+          aria-describedby="emailHelp"
+          formControlName="email"
+        />
+      </div>
+      <div class="mb-3">
+        <label for="loginPassword" class="form-label">Password</label>
+        <input type="password" class="form-control" id="loginPassword" formControlName="password" />
+      </div>
+      <button class="btn btn-primary w-100">Login</button>
+    </form>
+  </div>
+</main>
+<!-- ALERT -->
+<div
+  class="alert alert-danger alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isError()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>

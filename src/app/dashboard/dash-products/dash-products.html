@@ -1,0 +1,417 @@
+<main class="py-5">
+  <div class="container">
+    <div class="d-flex align-items-center mb-4">
+      <button
+        class="btn"
+        style="font-size: 18px"
+        data-bs-toggle="modal"
+        data-bs-target="#filterModal"
+      >
+        <i class="fa-solid fa-bars"></i>
+        <span>Filters</span>
+      </button>
+      <div class="input-group mx-auto" style="max-width: 540px">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search"
+          [(ngModel)]="searchInput"
+          aria-label="Search"
+          aria-describedby="button-addon2"
+        />
+        <button class="btn btn-primary" type="button" id="button-addon2" (click)="search()">
+          Search
+        </button>
+      </div>
+    </div>
+    <h1>Add New Product</h1>
+    <form [formGroup]="productForm" (ngSubmit)="addProduct()">
+      <div class="form-group mb-3">
+        <label for="text" class="form-label">Title:</label>
+        <input type="text" class="form-control" formControlName="title" />
+        <div class="msg" *ngIf="productForm.get('title')?.touched">
+          <span *ngIf="productForm.get('title')?.errors?.['required']"
+            >Product title is required</span
+          >
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label for="text" class="form-label">Description:</label>
+        <input type="text" class="form-control" formControlName="description" />
+        <div class="msg" *ngIf="productForm.get('description')?.touched">
+          <span *ngIf="productForm.get('description')?.errors?.['required']"
+            >Product description is required</span
+          >
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label for="text" class="form-label">Price:</label>
+        <input type="number" min="1" class="form-control" formControlName="price" />
+        <div class="msg" *ngIf="productForm.get('price')?.touched">
+          <span *ngIf="productForm.get('price')?.errors?.['required']"
+            >Product price is required</span
+          >
+          <span *ngIf="productForm.get('price')?.errors?.['min']"
+            >Product price minimum value is 1</span
+          >
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label for="text" class="form-label">Stock Quantity:</label>
+        <input type="number" min="0" class="form-control" formControlName="stock" />
+        <div class="msg" *ngIf="productForm.get('stock')?.touched">
+          <span *ngIf="productForm.get('stock')?.errors?.['required']"
+            >Stock quantity is required</span
+          >
+          <span *ngIf="productForm.get('stock')?.errors?.['min']"
+            >Stock quantity minimum value is 0</span
+          >
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label for="text" class="form-label">Category:</label>
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          formControlName="categoryId"
+        >
+          @for (category of categories(); track category._id) {
+          <option [ngValue]="category._id">{{ category.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group mb-3">
+        <label for="text" class="form-label">Sub-category:</label>
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          formControlName="subCategoryId"
+        >
+          @for (category of categories(); track category._id) { @for (subCategory of
+          category.subCategories; track subCategory._id) { @if (productForm.get('categoryId')?.value
+          === category._id) {
+          <option [ngValue]="subCategory._id">{{ subCategory.name }}</option>
+          } } }
+        </select>
+      </div>
+      <div class="form-group mb-3">
+        <label for="text" class="form-label">Image:</label>
+        <input type="file" class="form-control" (change)="setImgForAdd($event)" />
+      </div>
+      <div class="d-flex justify-content-end">
+        <button class="btn btn-success">Add Product</button>
+      </div>
+    </form>
+    <h1 class="mt-4">Your Products List</h1>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+      @for (product of productsList(); track product._id) {
+      <div class="col">
+        <div class="card h-100 position-relative">
+          <div class="position-relative" style="height: 250px">
+            <img
+              [ngSrc]="product.image"
+              class="card-img-top"
+              [alt]="product.title"
+              fill
+              [priority]="$first"
+            />
+          </div>
+          <div class="card-body">
+            <h4 class="card-title">{{ product.title }}</h4>
+            <p class="card-text fs-5 mb-0">
+              {{ product.description }}
+            </p>
+            @if (product.stock < 6) {
+            <p class="card-text text-danger">
+              <small>
+                {{ product.stock < 1 ? 'Out of Stock' : `Only ${product.stock} items` }}
+              </small>
+            </p>
+            }
+            <p class="card-text d-flex fs-5 justify-content-end" style="font-weight: bold">
+              {{ product.price | currency : 'EGP ' }}
+            </p>
+            <div class="d-flex gap-2">
+              <button
+                class="btn btn-warning"
+                (click)="updateProduct(product)"
+                data-bs-toggle="modal"
+                data-bs-target="#updateProductModal"
+              >
+                Edit Product
+              </button>
+              <button
+                class="btn btn-danger"
+                (click)="setTarget(product)"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteProductModal"
+              >
+                Delete Product
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</main>
+<!-- Modals -->
+<!-- Filter -->
+<div
+  class="modal left fade"
+  id="filterModal"
+  tabindex="-1"
+  aria-labelledby="filterModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header">
+        <h4 class="modal-title" id="filterModalLabel">Filters</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h5 class="mb-3">Category</h5>
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          [(ngModel)]="selectedCategory"
+        >
+          <option ngValue="" selected>All categories</option>
+          @for (category of categories(); track category._id) {
+          <option [ngValue]="category._id">{{ category.name }}</option>
+          }
+        </select>
+
+        <hr />
+
+        <h5 class="mb-3">Sub-category</h5>
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          [(ngModel)]="selectedSubCategory"
+        >
+          <option ngValue="" selected>All Sub-categories</option>
+          @for (category of categories(); track category._id) { @for (subCategory of
+          category.subCategories; track subCategory._id) { @if (selectedCategory === "" ||
+          selectedCategory === category._id) {
+          <option [ngValue]="subCategory._id">{{ subCategory.name }}</option>
+          } } }
+        </select>
+
+        <hr />
+
+        <h5 class="mb-3">Price Range</h5>
+
+        <div class="range-slider px-2">
+          <h6>Min:</h6>
+          <input
+            type="range"
+            class="form-range"
+            min="0"
+            [max]="maxPrice"
+            step="10"
+            [(ngModel)]="minPrice"
+          />
+          <h6>Max:</h6>
+          <input
+            type="range"
+            class="form-range"
+            [min]="minPrice"
+            [max]="maxPriceInProducts()"
+            step="10"
+            [(ngModel)]="maxPrice"
+          />
+        </div>
+
+        <div class="row g-2 align-items-center mb-2">
+          <div class="col">
+            <input type="number" class="form-control" placeholder="Min" [(ngModel)]="minPrice" />
+          </div>
+          <div class="col">
+            <input type="number" class="form-control" placeholder="Max" [(ngModel)]="maxPrice" />
+          </div>
+        </div>
+
+        <div class="text-muted small mt-2">
+          Price: {{ minPrice | currency : 'EGP ' }} -
+          {{ maxPrice | currency : 'EGP ' }}
+        </div>
+
+        <hr />
+
+        <h5 class="mb-3">Sort By</h5>
+        <select class="form-select" aria-label="Default select example" [(ngModel)]="sortBy">
+          <option ngValue="" selected>Default</option>
+          <option ngValue="title">A to Z</option>
+          <option ngValue="-title">Z to A</option>
+          <option ngValue="price">Min price</option>
+          <option ngValue="-price">Max price</option>
+          <option ngValue="createdAt">Latest products</option>
+          <option ngValue="-createdAt">Oldest products</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-primary" (click)="applyFilters()" data-bs-dismiss="modal">
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Edit -->
+<div
+  class="modal fade"
+  id="updateProductModal"
+  tabindex="-1"
+  aria-labelledby="updateProductModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="updateProductModalLabel">Edit Product</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="updateProductForm">
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Title:</label>
+            <input type="text" class="form-control" formControlName="title" />
+            <div class="msg" *ngIf="updateProductForm.get('title')?.touched">
+              <span *ngIf="updateProductForm.get('title')?.errors?.['required']"
+                >Product title is required</span
+              >
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Description:</label>
+            <input type="text" class="form-control" formControlName="description" />
+            <div class="msg" *ngIf="updateProductForm.get('description')?.touched">
+              <span *ngIf="updateProductForm.get('description')?.errors?.['required']"
+                >Product description is required</span
+              >
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Price:</label>
+            <input type="number" min="1" class="form-control" formControlName="price" />
+            <div class="msg" *ngIf="updateProductForm.get('price')?.touched">
+              <span *ngIf="updateProductForm.get('price')?.errors?.['required']"
+                >Product price is required</span
+              >
+              <span *ngIf="updateProductForm.get('price')?.errors?.['min']"
+                >Product price minimum value is 1</span
+              >
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Stock Quantity:</label>
+            <input type="number" min="0" class="form-control" formControlName="stock" />
+            <div class="msg" *ngIf="updateProductForm.get('stock')?.touched">
+              <span *ngIf="updateProductForm.get('stock')?.errors?.['required']"
+                >Stock quantity is required</span
+              >
+              <span *ngIf="updateProductForm.get('stock')?.errors?.['min']"
+                >Stock quantity minimum value is 0</span
+              >
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Category:</label>
+            <select
+              class="form-select"
+              aria-label="Default select example"
+              formControlName="categoryId"
+            >
+              @for (category of categories(); track category._id) {
+              <option [ngValue]="category._id">{{ category.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Sub-category:</label>
+            <select
+              class="form-select"
+              aria-label="Default select example"
+              formControlName="subCategoryId"
+            >
+              @for (category of categories(); track category._id) { @for (subCategory of
+              category.subCategories; track subCategory._id) { @if
+              (updateProductForm.get('categoryId')?.value === category._id) {
+              <option [ngValue]="subCategory._id">{{ subCategory.name }}</option>
+              } } }
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Image:</label>
+            <input type="file" class="form-control" (change)="setImgForUpdate($event)" />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-bs-dismiss="modal"
+          (click)="confirmUpdate()"
+        >
+          Save changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- DELETE -->
+<div
+  class="modal fade"
+  id="deleteProductModal"
+  tabindex="-1"
+  aria-labelledby="deleteProductModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="deleteProductModalLabel">Confirm Delete</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h4>Are You Sure You Want To Delete this Product</h4>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          data-bs-dismiss="modal"
+          (click)="confirmDelete()"
+        >
+          Confirm Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ALERTS -->
+<div
+  class="alert alert-success alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isSuccess()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div
+  class="alert alert-danger alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isError()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>

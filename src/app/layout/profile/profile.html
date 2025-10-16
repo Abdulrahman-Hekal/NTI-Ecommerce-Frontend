@@ -1,0 +1,321 @@
+<main class="d-flex justify-content-center align-items-center">
+  <div class="container">
+    <h1>Your Profile</h1>
+    <div class="card">
+      <div class="card-body position-relative">
+        <div
+          class="d-flex align-items-center gap-2 position-absolute end-0"
+          style="z-index: 5; margin-right: 1rem"
+        >
+          <button
+            type="button"
+            class="btn btn-warning text-light"
+            data-bs-toggle="modal"
+            data-bs-target="#updateAccountModal"
+          >
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteAccountModal"
+          >
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <i class="fa-solid fa-circle-user" style="font-size: 5rem"></i>
+          <div>
+            <p class="mb-0 fs-5">Name: {{ userData().name | titlecase }}</p>
+            <p class="mb-0 fs-5">Email: {{ userData().email }}</p>
+          </div>
+        </div>
+        @if (userData().addresses) { @if (userData().addresses.length > 0) {
+        <h3>Your Addresses</h3>
+        @for (address of userData().addresses; track address._id) {
+        <p class="mb-1" style="font-size: 18px">
+          {{ address.isDefault ? 'Main' : $index + 1 }}: {{ address.governorate | titlecase }}-{{
+            address.city | titlecase
+          }}-{{ address.street | titlecase }}
+        </p>
+        } } } @if (userData().phones) { @if (userData().phones.length > 0) {
+        <h3>Your Phone Numbers</h3>
+        @for (phone of userData().phones; track phone._id) {
+        <p class="mb-1" style="font-size: 18px">
+          {{ phone.isDefault ? 'Main' : $index + 1 }}: {{ phone.number }}
+        </p>
+        } } }
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn btn-danger" (click)="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<!-- Modals -->
+<!-- Edit -->
+<div
+  class="modal fade"
+  id="updateAccountModal"
+  tabindex="-1"
+  aria-labelledby="updateAccountModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="updateAccountModalLabel">Edit Account</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (editForm) {
+        <form [formGroup]="editForm">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" formControlName="name" />
+            @if(editForm.get('name')?.invalid && editForm.get('name')?.touched) {
+            <div class="msg">
+              <span *ngIf="editForm.get('name')?.errors?.['required']">Name is required</span>
+            </div>
+            }
+          </div>
+          <div class="mb-3">
+            <label for="registerEmail" class="form-label">Email address</label>
+            <input
+              type="email"
+              class="form-control"
+              id="registerEmail"
+              aria-describedby="emailHelp"
+              placeholder="example@example.com"
+              formControlName="email"
+            />
+            @if(editForm.get('email')?.invalid && editForm.get('email')?.touched) {
+            <div class="msg">
+              <span *ngIf="editForm.get('email')?.errors?.['required']">Email is required</span>
+              <span *ngIf="editForm.get('email')?.errors?.['pattern']"
+                >Please enter a valid email</span
+              >
+            </div>
+            }
+          </div>
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="currentPassword"
+              formControlName="prevPassword"
+            />
+            @if(editForm.get('prevPassword')?.invalid && editForm.get('prevPassword')?.touched) {
+            <div class="msg">
+              <span *ngIf="editForm.get('prevPassword')?.errors?.['required']"
+                >Current Password is required</span
+              >
+            </div>
+            }
+          </div>
+          <div class="mb-3">
+            <label for="registerPassword" class="form-label">New Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="registerPassword"
+              formControlName="password"
+            />
+            @if(editForm.get('password')?.invalid && editForm.get('password')?.touched) {
+            <div class="msg">
+              <span *ngIf="editForm.get('password')?.errors?.['required']"
+                >New Password is required</span
+              >
+              <span *ngIf="editForm.get('password')?.errors?.['pattern']"
+                >Please enter a strong password<br />* min-length 8 characters<br />* one uppercase
+                letter<br />* one lowercase letter<br />* one number</span
+              >
+            </div>
+            }
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="confirmPassword"
+              formControlName="confirmPassword"
+            />
+            @if(editForm.get('confirmPassword')?.invalid &&
+            editForm.get('confirmPassword')?.touched) {
+            <div class="msg">
+              <div *ngIf="editForm.get('confirmPassword')?.errors?.['required']">
+                Confirm Password is required
+              </div>
+              <div *ngIf="editForm.get('confirmPassword')?.errors?.['dismatchpassword']">
+                The password and the confirm doesn't match
+              </div>
+            </div>
+            }
+          </div>
+          <div formArrayName="phones">
+            <p>Phone Numbers</p>
+            @for(phone of phones.controls; track phone) {
+            <div class="input-group mb-3" [formGroupName]="$index">
+              <span class="input-group-text">
+                <input
+                  class="form-check-input mt-0"
+                  type="radio"
+                  id="radio-phone-{{ $index }}"
+                  aria-label="Radio button for following phone"
+                  [checked]="phone.get('isDefault')?.value"
+                  (change)="setPhoneDefault($index)"
+                  name="phone"
+                />
+                <label for="radio-phone-{{ $index }}" style="margin-left: 5px">Main</label>
+              </span>
+              <input type="text" class="form-control" formControlName="number" />
+              <button class="btn btn-primary" type="button" *ngIf="$last" (click)="addPhone()">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+              <button
+                class="btn btn-primary"
+                type="button"
+                *ngIf="!$last"
+                (click)="removePhone($index)"
+              >
+                <i class="fa-solid fa-minus"></i>
+              </button>
+            </div>
+            @if(phone.get('number')?.invalid && phone.get('number')?.touched) {
+            <div class="msg mb-2" style="margin-top: -1rem">
+              <span *ngIf="phone.get('number')?.errors?.['required']"
+                >Phone number is required</span
+              >
+              <span *ngIf="phone.get('number')?.errors?.['pattern']"
+                >Phone number must be 11 numbers</span
+              >
+            </div>
+            } }
+          </div>
+          <div formArrayName="addresses">
+            <p>Addresses</p>
+            @for(address of addresses.controls; track address) {
+            <div class="input-group mb-3" [formGroupName]="$index">
+              <span class="input-group-text">
+                <input
+                  class="form-check-input mt-0"
+                  type="radio"
+                  id="radio-address-{{ $index }}"
+                  aria-label="Radio button for following address"
+                  [checked]="address.get('isDefault')?.value"
+                  (change)="setAddressDefault($index)"
+                  name="address"
+                />
+                <label for="radio-address-{{ $index }}" style="margin-left: 5px">Main</label>
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Governorate"
+                formControlName="governorate"
+              />
+              <input type="text" class="form-control" placeholder="City" formControlName="city" />
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Street"
+                formControlName="street"
+              />
+              <button class="btn btn-primary" type="button" *ngIf="$last" (click)="addAddress()">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+              <button
+                class="btn btn-primary"
+                type="button"
+                *ngIf="!$last"
+                (click)="removeAddress($index)"
+              >
+                <i class="fa-solid fa-minus"></i>
+              </button>
+            </div>
+            @if(address.get('governorate')?.invalid && address.get('governorate')?.touched) {
+            <div class="msg mb-2" style="margin-top: -1rem">
+              <span *ngIf="address.get('governorate')?.errors?.['required']"
+                >Governorate is required</span
+              >
+            </div>
+            } @if(address.get('city')?.invalid && address.get('city')?.touched) {
+            <div class="msg mb-2" style="margin-top: -1rem">
+              <span *ngIf="address.get('city')?.errors?.['required']">City is required</span>
+            </div>
+            } @if(address.get('street')?.invalid && address.get('street')?.touched) {
+            <div class="msg mb-2" style="margin-top: -1rem">
+              <span *ngIf="address.get('street')?.errors?.['required']">Street is required</span>
+            </div>
+            } }
+          </div>
+        </form>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-bs-dismiss="modal"
+          (click)="isCorrectPassword()"
+        >
+          Save changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- DELETE -->
+<div
+  class="modal fade"
+  id="deleteAccountModal"
+  tabindex="-1"
+  aria-labelledby="deleteAccountModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="deleteAccountModalLabel">Confirm Delete</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h4>Are You Sure You Want To Delete your account</h4>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          data-bs-dismiss="modal"
+          (click)="confirmDelete()"
+        >
+          Confirm Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ALERTS -->
+<div
+  class="alert alert-success alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isSuccess()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div
+  class="alert alert-danger alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isError()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>

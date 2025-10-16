@@ -1,0 +1,157 @@
+<div class="position-relative">
+  <div id="testimonialsCarousel" class="carousel slide mt-4" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+      @for (testimonial of testimonials(); track testimonial._id) {
+      <button
+        type="button"
+        data-bs-target="#testimonialsCarousel"
+        class="bg-dark"
+        [attr.data-bs-slide-to]="$index"
+        [class.active]="$first"
+        [aria-current]="$first"
+        aria-label="Slide {{ $index + 1 }}"
+      ></button>
+      }
+    </div>
+    <div class="carousel-inner">
+      @for (testimonial of testimonials(); track testimonial._id) {
+      <div class="carousel-item" [class.active]="$first">
+        <div class="card">
+          <div class="card-header px-5">Testimonial</div>
+          <div class="card-body px-5">
+            <div class="blockquote mb-4">
+              <p>{{ testimonial.message }}</p>
+            </div>
+            <div class="blockquote-footer d-flex align-items-center">
+              <div>
+                By <span>{{ testimonial.user.name | titlecase }}</span>
+              </div>
+              <div style="margin-left: 1rem">
+                <span *ngIf="testimonial.rating > 0">
+                  <i class="fa-solid fa-star text-warning"></i>
+                </span>
+                <span *ngIf="testimonial.rating > 1">
+                  <i class="fa-solid fa-star text-warning"></i>
+                </span>
+                <span *ngIf="testimonial.rating > 2">
+                  <i class="fa-solid fa-star text-warning"></i>
+                </span>
+                <span *ngIf="testimonial.rating > 3">
+                  <i class="fa-solid fa-star text-warning"></i>
+                </span>
+                <span *ngIf="testimonial.rating > 4">
+                  <i class="fa-solid fa-star text-warning"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    <button
+      class="carousel-control-prev"
+      style="left: -60px"
+      type="button"
+      data-bs-target="#testimonialsCarousel"
+      data-bs-slide="prev"
+    >
+      <i class="fa-solid fa-angle-left text-dark" style="font-size: 25px" aria-hidden="true"></i>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button
+      class="carousel-control-next"
+      style="right: -60px"
+      type="button"
+      data-bs-target="#testimonialsCarousel"
+      data-bs-slide="next"
+    >
+      <i class="fa-solid fa-angle-right text-dark" style="font-size: 25px" aria-hidden="true"></i>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+  <button
+    *ngIf="isUser()"
+    class="btn btn-success position-absolute end-0 mt-2"
+    data-bs-toggle="modal"
+    data-bs-target="#addTestimonialModal"
+  >
+    Add Testimonial
+  </button>
+</div>
+<!-- Modal -->
+<!-- Add -->
+<div
+  class="modal fade"
+  id="addTestimonialModal"
+  tabindex="-1"
+  aria-labelledby="addTestimonialModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="addTestimonialModalLabel">Give us your feedback</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="testimonialForm">
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Message:</label>
+            <input type="text" class="form-control" formControlName="message" />
+            <div class="msg" *ngIf="testimonialForm.get('message')?.touched">
+              <span *ngIf="testimonialForm.get('message')?.errors?.['required']"
+                >Message is required</span
+              >
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label for="text" class="form-label">Rating:</label>
+            <input type="number" min="1" max="5" class="form-control" formControlName="rating" />
+            <div class="msg" *ngIf="testimonialForm.get('rating')?.touched">
+              <span *ngIf="testimonialForm.get('rating')?.errors?.['required']"
+                >Rating is required</span
+              >
+              <span *ngIf="testimonialForm.get('rating')?.errors?.['min']"
+                >Minimum rating is 1</span
+              >
+              <span *ngIf="testimonialForm.get('rating')?.errors?.['max']"
+                >Maximum rating is 5</span
+              >
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-bs-dismiss="modal"
+          (click)="addTestimonial()"
+        >
+          Add Testimonial
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ALERTS -->
+<div
+  class="alert alert-success alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isSuccess()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div
+  class="alert alert-danger alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isError()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>

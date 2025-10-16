@@ -1,0 +1,181 @@
+<main class="py-5">
+  <div class="container">
+    <h1>Non-Approved Testimonials</h1>
+    @for (testimonial of nonApprovedTestimonials(); track testimonial._id) {
+    <div class="card mb-3">
+      <div class="card-body position-relative">
+        <div class="d-flex align-items-center gap-2 position-absolute end-0" style="z-index: 5; margin-right: 1rem;">
+          <button
+            type="button"
+            class="btn btn-success text-light"
+            (click)="setTarget(testimonial)"
+            data-bs-toggle="modal"
+            data-bs-target="#approveTestimonialModal"
+          >
+            Approve
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="setTarget(testimonial)"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteTestimonialModal"
+          >
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+        <div class="blockquote mb-4">
+          <p>{{ testimonial.message }}</p>
+        </div>
+        <div class="blockquote-footer d-flex align-items-center">
+          <div>
+            By <span>{{ testimonial.user.name | titlecase }}</span>
+          </div>
+          <div style="margin-left: 1rem">
+            <span *ngIf="testimonial.rating > 0">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+            <span *ngIf="testimonial.rating > 1">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+            <span *ngIf="testimonial.rating > 2">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+            <span *ngIf="testimonial.rating > 3">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+            <span *ngIf="testimonial.rating > 4">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+    <h1 class="mt-5">Approved Testimonials</h1>
+    @for (testimonial of approvedTestimonials(); track testimonial._id) {
+    <div class="card mb-3">
+      <div class="card-body position-relative">
+        <div class="d-flex align-items-center gap-2 position-absolute end-0" style="z-index: 5; margin-right: 1rem;">
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="setTarget(testimonial)"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteTestimonialModal"
+          >
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+        <div class="blockquote mb-4">
+          <p>{{ testimonial.message }}</p>
+        </div>
+        <div class="blockquote-footer d-flex align-items-center">
+          <div>
+            By <span>{{ testimonial.user.name | titlecase }}</span>
+          </div>
+          <div style="margin-left: 1rem">
+            <span *ngIf="testimonial.rating > 0">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+            <span *ngIf="testimonial.rating > 1">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+            <span *ngIf="testimonial.rating > 2">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+            <span *ngIf="testimonial.rating > 3">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+            <span *ngIf="testimonial.rating > 4">
+              <i class="fa-solid fa-star text-warning"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</main>
+<!-- Modals -->
+<!-- Edit -->
+<div
+  class="modal fade"
+  id="approveTestimonialModal"
+  tabindex="-1"
+  aria-labelledby="approveTestimonialModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="approveTestimonialModalLabel">Approve Testimonial</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h4>Are You Sure You Want To Approve this Testimonial</h4>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-success"
+          data-bs-dismiss="modal"
+          (click)="approveTestimonial()"
+        >
+          Confirm Approve
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- DELETE -->
+<div
+  class="modal fade"
+  id="deleteTestimonialModal"
+  tabindex="-1"
+  aria-labelledby="deleteTestimonialModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="deleteTestimonialModalLabel">Confirm Delete</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h4>Are You Sure You Want To Delete this Testimonial</h4>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          data-bs-dismiss="modal"
+          (click)="deleteTestimonial()"
+        >
+          Confirm Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ALERTS -->
+<div
+  class="alert alert-success alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isSuccess()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div
+  class="alert alert-danger alert-dismissible position-fixed end-0"
+  role="alert"
+  style="width: fit-content; bottom: 45px; z-index: 5"
+  *ngIf="isError()"
+>
+  <div>{{ alertMessage() }}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>

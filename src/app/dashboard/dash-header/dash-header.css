@@ -1,0 +1,20 @@
+a {
+  transition: 0.4s;
+  font-size: 17px;
+  color: black;
+}
+a:hover:not(.active) {
+  opacity: 0.75;
+}
+.active {
+  color: #fff !important;
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+.profile-active {
+  opacity: 0.75;
+}
+.active,
+.profile-active {
+  cursor: default;
+}
